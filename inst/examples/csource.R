@@ -18,7 +18,7 @@ csource <- function(
     stopifnot(is.character(shlibargs))
     stopifnot(is.character(headers))
     stopifnot(is.character(R), length(R) == 1)
-    stopifnot(is.null(rfname) | file.exists(rfname))
+    stopifnot(is.null(rfname) || file.exists(rfname))
 
     if (is.null(libname))
         libname <- regmatches(basename(fname),

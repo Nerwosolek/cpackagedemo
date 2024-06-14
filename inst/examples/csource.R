@@ -4,6 +4,7 @@
 csource <- function(
     fname,
     libname=NULL,  # defaults to the base name of `fname` without extension
+    rfname=NULL, # R file with function calling package's funcs. defaults to extracting from .c file
     shlibargs=character(),
     headers=paste0(
         "#include <R.h>\n",
@@ -17,6 +18,7 @@ csource <- function(
     stopifnot(is.character(shlibargs))
     stopifnot(is.character(headers))
     stopifnot(is.character(R), length(R) == 1)
+    stopifnot(is.null(rfname) | file.exists(rfname))
 
     if (is.null(libname))
         libname <- regmatches(basename(fname),

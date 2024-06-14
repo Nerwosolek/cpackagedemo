@@ -34,23 +34,25 @@ csource <- function(
     dynlib_ext <- .Platform[["dynlib.ext"]]
     libpath <- file.path(tmpdir, sprintf("%s%s", libname, dynlib_ext))
     cfname <- file.path(tmpdir, basename(fname))
-    rfname <- sub("\\..*?$", ".R", cfname, perl=TRUE)  # .R extension
+    if (is.null(rfname)) {
+      rfname <- sub("\\..*?$", ".R", cfname, perl=TRUE)  # .R extension.
+    
+      # separate the /* R ... <R code> ... R */ chunk from the source file:
+      rpart <- regexec("(?smi)^/\\* R\\s?(.*)R \\*/$", f, perl=TRUE)[[1]]
+      rpart_start <- rpart
+      rpart_len <- attr(rpart, "match.length")
+      if (rpart_start[1] < 0 || rpart_len[1] < 0)
+          stop("enclose R code between /* R ... and ... R */")
 
-    # separate the /* R ... <R code> ... R */ chunk from the source file:
-    rpart <- regexec("(?smi)^/\\* R\\s?(.*)R \\*/$", f, perl=TRUE)[[1]]
-    rpart_start <- rpart
-    rpart_len <- attr(rpart, "match.length")
-    if (rpart_start[1] < 0 || rpart_len[1] < 0)
-        stop("enclose R code between /* R ... and ... R */")
+      rcode <- substr(f, rpart_start[2], rpart_start[2]+rpart_len[2]-1)
 
-    rcode <- substr(f, rpart_start[2], rpart_start[2]+rpart_len[2]-1)
-    cat(rcode, file=rfname, append=FALSE)
+      cat(rcode, file=rfname, append=FALSE)
+    } 
 
     # write the C/C++ file:
     ccode <- paste(
         headers,
-        substr(f, 1, rpart_start[1]-1),
-        substr(f, rpart_start[1]+rpart_len[1], nchar(f)),
+        f,
         collapse="\n"
     )
     cat(ccode, file=cfname, append=FALSE)

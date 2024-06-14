@@ -4,7 +4,7 @@
 csource <- function(
     fname,
     libname=NULL,  # defaults to the base name of `fname` without extension
-    rfname=NULL, # R file with function calling package's funcs. defaults to extracting from .c file
+    rfname=NULL, # R file with function calling package's funcs. defaults to extracting from fname file
     shlibargs=character(),
     headers=paste0(
         "#include <R.h>\n",

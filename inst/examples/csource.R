@@ -19,6 +19,7 @@ csource <- function(
     stopifnot(is.character(headers))
     stopifnot(is.character(R), length(R) == 1)
     stopifnot(is.null(rfname) || file.exists(rfname))
+    is_rfname = !is.null(rfname)
 
     if (is.null(libname))
         libname <- regmatches(basename(fname),
@@ -33,10 +34,11 @@ csource <- function(
     tmpdir <- normalizePath(tempdir(), winslash="/")  # tempdir on Win uses \
     dynlib_ext <- .Platform[["dynlib.ext"]]
     libpath <- file.path(tmpdir, sprintf("%s%s", libname, dynlib_ext))
+    cat(paste0("libpath: ", libpath, "\n"))
     cfname <- file.path(tmpdir, basename(fname))
-    if (is.null(rfname)) {
+    if (!is_rfname) {
       rfname <- sub("\\..*?$", ".R", cfname, perl=TRUE)  # .R extension.
-    
+      print(rfname) 
       # separate the /* R ... <R code> ... R */ chunk from the source file:
       rpart <- regexec("(?smi)^/\\* R\\s?(.*)R \\*/$", f, perl=TRUE)[[1]]
       rpart_start <- rpart
@@ -73,7 +75,10 @@ csource <- function(
             dyn.unload(libpath)
         stopifnot(system2(R, shlibargs) == 0)  # 0 == success
         dyn.load(libpath)
-        source(rfname)
+        if (!is_rfname)
+          source(file.path(dirname(libpath), basename(rfname))) # This is a problem, depending how we wanted R file to be created it lands in different places (original or along lib)
+        else
+          source(file.path(oldwd, basename(rfname)))
         retval <- TRUE
     }, error=function(e) {
         cat(as.character(e), file=stderr())

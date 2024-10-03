@@ -2,7 +2,7 @@ SEXP C_test_sexptype(SEXP x)
 {
     Rprintf("type of x: %s (SEXPTYPE=%d)\n",
         Rf_type2char(TYPEOF(x)),
-        (int)TYPEOF(x)
+        TYPEOF(x)
     );
     return R_NilValue;
 }
